@@ -21,7 +21,16 @@ const stockSchema= new mongoose.Schema({
         default:Date.now
     }
 
+    },{
+        toJSON:{virtuals:true},
+        toObject:{virtuals:true}
     }
-)
+);
+
+stockSchema.virtual('investment').get(function(){
+    return this.price*this.units;
+}) // Can't use arrow functions as we need to use this inside the function
+
+
 
 module.exports=mongoose.model('Stock',stockSchema)
