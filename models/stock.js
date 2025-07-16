@@ -4,7 +4,7 @@ const stockSchema= new mongoose.Schema({
     name:{
         type:String,
         required:[true,'Name is required'],
-        unique:true
+        trim:true,
     },
     price:{
         type:Number,
@@ -19,6 +19,12 @@ const stockSchema= new mongoose.Schema({
     createdAt:{
         type:Date,
         default:Date.now
+    },
+    // ADDING USER Refrence 
+    user:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'User',
+        required:true
     }
 
     },{
@@ -26,7 +32,9 @@ const stockSchema= new mongoose.Schema({
         toObject:{virtuals:true}
     }
 );
+stockSchema.index({ user: 1, name: 1 }, { unique: true });
 
+// stockSchema.index({ user: 1, name: 1 }, { unique: true });
 stockSchema.virtual('investment').get(function(){
     return this.price*this.units;
 }) // Can't use arrow functions as we need to use this inside the function

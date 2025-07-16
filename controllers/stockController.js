@@ -1,13 +1,34 @@
 const Stock=require('../models/stock.js')
 const asyncWrapper=require('../middleware/asyncHandler.js');
-const { BadRequestError, NotFoundError } = require('../errors/index.js');
+const { BadRequestError, NotFoundError, UnauthenticatedError } = require('../errors/index.js');
 const { addStockSchema,updateStockSchema } = require('../validators/stockValidator');
+const checkStockOwnership = require('../utils/checkOwnership');
+const { ObjectId } = require('mongoose').Types;
+
+exports.updateStock = asyncWrapper(async (req, res) => {
+  const { id: stockId } = req.params;
+
+  await checkStockOwnership(stockId, req.user.userId); //FIXES IDOR
+
+  const { error, value } = updateStockSchema.validate(req.body);
+  if (error) {
+    throw new BadRequestError(error.details[0].message);
+  }
+
+  const updated = await Stock.findByIdAndUpdate(stockId, value, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(200).json({ msg: 'Stock updated successfully', stock: updated });
+});
+
 
 exports.getAllStocks=asyncWrapper(async (req,res)=>{
         const {name,minPrice,maxPrice,sort,fields}=req.query;
         
         //FILTERING
-        const queryObject={};
+        const queryObject={user:req.user.userId};
 
         if(name){
             queryObject.name={$regex:`^${name}$`,$options:'i'};
@@ -43,8 +64,11 @@ exports.getAllStocks=asyncWrapper(async (req,res)=>{
        ]
      
        if(fields){
-        const requestedFields=fields.split(',').map(f=>f.toLowerCase());
-        const invalidFields=requestedFields.filter(f=>!allowedFields.includes(f));// array with invalid fields
+        const requestedFields=fields.split(',').map(f=>f.trim());
+         //strip leading - or + from field names
+         const cleanedFields=requestedFields.map(f=>f.replace(/^[-+]/,'').trim())
+
+        const invalidFields=cleanedFields.filter(f=>!allowedFields.includes(f));// array with invalid fields
         
         if(invalidFields.length>0){
            throw new BadRequestError('Query contains invalid Fields!') 
@@ -63,7 +87,11 @@ exports.getAllStocks=asyncWrapper(async (req,res)=>{
        result= result.skip(skip).limit(limit)
     }
        const stocks= await result;
-        res.status(200).json(stocks);
+        res.status(200).json({
+            message:'Stocks Retrieved Successfully',
+            count:stocks.length,
+            data:stocks
+        });
     
 })
 
@@ -75,7 +103,10 @@ const {name}= req.query;
 if(!name){
     throw new BadRequestError('Please Provide a stock Name')
 }
-const stock=await Stock.findOne({name:{$regex:name,$options:'i'}})
+const stock=await Stock.findOne({
+    name:{$regex:name,$options:'i'},
+    user:req.user.userId
+})
 if (!stock) {
     throw new NotFoundError(`No stock found with name '${name}'`);  }
 
@@ -92,44 +123,30 @@ exports.addStock=asyncWrapper(async (req,res)=>{
    }
     const {name,price,units}=value;
     
-    const existing= await Stock.findOne({name})
+    const existing= await Stock.findOne({
+        name,
+        user: req.user.userId 
+    })
     if(existing){
         throw new BadRequestError('Stock with that name already exists!')
     }
-    const newStock=await Stock.create({name,price,units});
+    const newStock=await Stock.create({name,price,units,user: req.user.userId,});
     res.status(201).json({
         msg:'Stock added Successfully',
         stock:newStock
     })
 })
 
-exports.updateStock=asyncWrapper(async(req,res)=>{
-const {id:stockId}=req.params;
-const {error,value}=updateStockSchema.validate(req.body)
-if(error){
-    throw new BadRequestError(error.details[0].message);
-}
-const updated= await Stock.findByIdAndUpdate(stockId,value,{
-    new:true,
-    runValidators:true
-})
-if (!updated) {
-    throw new NotFoundError('Stock with that id not found!');
-}
-
-res.status(200).json({ msg: 'Stock updated successfully', stock: updated });
-})
 
 exports.deleteStock=asyncWrapper(async(req,res)=>{
     const {id:stockId}= req.params;
     // console.log(stockId);
-    const deletedStock=await Stock.findByIdAndDelete(stockId);
-    if(!deletedStock){
-        throw new NotFoundError('Stock with that id not found!')
-    }
+    const stock =await checkStockOwnership(stockId,req.user.userId)
+    await stock.deleteOne();
+
      res.status(200).json({
-        msg: `Stock '${deletedStock.name}' deleted successfully.`,
-        deleted:deletedStock,
+        msg: `Stock '${stock.name}' deleted successfully.`,
+        deleted:stock,
       });
 
     })
@@ -137,7 +154,13 @@ exports.deleteStock=asyncWrapper(async(req,res)=>{
 
 //Aggregation Pipeline
 exports.getSummary=asyncWrapper(async(req,res)=>{
+    
     const summary= await Stock.aggregate([
+        {
+            $match:{
+                user: new ObjectId(req.user.userId)
+            }
+        },
         {
             $group:{
                 _id:null, //Combine all documentsinto one group

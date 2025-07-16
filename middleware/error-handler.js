@@ -11,10 +11,18 @@ const errorHandlerMiddleware=(err,req,res,next)=>{
     if (err instanceof CustomAPIError){
         return res.status(err.statusCode).json({msg:err.message})
     }
+
+    if (err.name==='ValidationError'){
+        const messages=Object.values(err.errors).map(e=>e.message);
+        return res.status(400).json({msg:messages.join(', ')})
+    }
+    console.log(err);
     
 
     return res.status(500).json({
+        
         msg:'Something went Wrong, Try again Later!'
+        
     })
 }
 
