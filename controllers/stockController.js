@@ -187,8 +187,3 @@ exports.getSummary=asyncWrapper(async(req,res)=>{
     res.status(200).json(data);
 
 })
-
-
-exports.resetPassword=asyncWrapper(async(req,res)=>{
-    res.status(200).send(`Password Reset functionality`)
-})
