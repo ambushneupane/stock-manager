@@ -1,7 +1,7 @@
 const mongoose=require('mongoose');
 const bcrypt=require('bcrypt')
 const jwt= require('jsonwebtoken');
-
+const crypto=require('crypto')
 
 const userSchema= new mongoose.Schema({
     username:{
@@ -21,8 +21,11 @@ const userSchema= new mongoose.Schema({
         type:String,
         required:[true,'Please provide Password'],
         minlength:[8,'Password Must be atleast 8 characters long']
-    }
-},{timestamps:true})
+    },
+    passwordResetToken: String,
+    passwordResetExpires:Date
+},
+{timestamps:true})
 
 //Hashing the password before saving
 userSchema.pre('save',async function(){
@@ -46,6 +49,13 @@ userSchema.methods.generateJWT= function(){
         process.env.JWT_SECRET,
         {expiresIn:'5d'}
     )
+}
+
+userSchema.methods.createResetToken=function(){
+    const resetToken=crypto.randomBytes(32).toString('hex');
+    this.passwordResetToken=crypto.createHash('sha256').update(resetToken).digest('hex');
+    this.passwordResetExpires=Date.now()+1000*60*10
+    return resetToken;
 }
 
 

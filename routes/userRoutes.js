@@ -5,11 +5,15 @@ const router = express.Router();
 
 const {
     registerUser,
-    loginUser
+    loginUser,
+    forgotPassword,
+    resetPassword
   } = require('../controllers/userController');
 
   router.post('/register', registerUser);
   router.post('/login', loginUser);
+  router.post('/forgot-password',forgotPassword)
+  router.patch('/reset-password/:token',resetPassword)
 
   
   module.exports = router;
