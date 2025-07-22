@@ -13,7 +13,15 @@ const updateStockSchema= Joi.object({
     units:Joi.number().integer().positive()
 });
 
+const sellStockSchema= Joi.object({
+    name:Joi.string().required(),
+    sellPrice: Joi.number().positive().required(),
+    quantity: Joi.number().integer().positive().required()
+
+})
+
 module.exports={
     addStockSchema,
-    updateStockSchema
+    updateStockSchema,
+    sellStockSchema
 }

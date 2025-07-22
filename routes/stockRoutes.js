@@ -1,13 +1,16 @@
 const express=require('express');
 const router= express.Router()
-const stockController= require('../controllers/stockController.js');
+const stockController= require('../controllers/stock');
+
 const auth=require('../middleware/auth.js')
 router.use(auth)
-router.get('',stockController.getStockByName) //curl "http://localhost:3000/api/stocks?name=HRL"
+
 
 router.get('/all',stockController.getAllStocks); // curl http://localhost:3000/api/stocks/all
 
 router.get('/summary',stockController.getSummary);
+
+router.post('/sell',stockController.sellStock);
 
 router.post('/add',stockController.addStock); 
 /*
