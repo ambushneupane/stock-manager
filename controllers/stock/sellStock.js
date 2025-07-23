@@ -1,10 +1,11 @@
 const Stock= require('../../models/stock.js')
 const asyncWrapper=require('../../middleware/asyncHandler.js');
-const { BadRequestError } = require('../../errors/index.js');
+const { BadRequestError, NotFoundError} = require('../../errors/index.js');
 const {sellStockSchema}=require('../../validators/stockValidator.js');
+const sellTransaction = require('../../models/sellTransaction.js');
 
 const sellStock= asyncWrapper(async(req,res)=>{
-    body=req.body||{}
+    const body=req.body||{}
     const {name,sellPrice,quantity}=body;
 
    const {error,value}=sellStockSchema.validate(body);
@@ -41,6 +42,29 @@ const sellStock= asyncWrapper(async(req,res)=>{
     }else{
         await stock.save(); 
     }
+
+    const dataToSave={
+        stock:stock._id,
+        user:req.user.userId,
+        unitsSold:quantity,
+        sellingPrice:sellPrice,
+        buyPrice:stock.price,
+    }
+    if(profitOrLoss>0){
+        dataToSave.profitAmount=profitOrLoss;
+        dataToSave.profitPercent=profitOrLossPercent;
+
+    }else if(profitOrLoss<0){
+        dataToSave.lossAmount=Math.abs(profitOrLoss);
+        dataToSave.lossPercent=Math.abs(profitOrLossPercent);
+    }else {
+        dataToSave.profitAmount=0;
+        dataToSave.profitPercent=0;
+    }
+    
+    //Saving Sell Transactions.
+    await sellTransaction.create(dataToSave)
+
 
 
     const responseData={

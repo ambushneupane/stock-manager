@@ -47,7 +47,7 @@ userSchema.methods.generateJWT= function(){
     return jwt.sign(
         {userId:this._id},
         process.env.JWT_SECRET,
-        {expiresIn:'5d'}
+        {expiresIn:'30d'}
     )
 }
 

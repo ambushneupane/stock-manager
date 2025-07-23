@@ -26,13 +26,17 @@ const sellTransactionSchema= new mongoose.Schema({
         type:Number,
         required:true
     },
-    plAmount:{
-        type:Number,
-        required:true
+    profitAmount:{
+        type:Number
     },
-    plPercent:{
-        type:Number,
-        required:true
+    profitPercent:{
+        type:Number
+    },
+    lossAmount:{
+        type:Number
+    },
+    lossPercent:{
+        type:Number
     },
     soldAt:{
         type:Date,
