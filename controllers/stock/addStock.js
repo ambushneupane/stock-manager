@@ -11,15 +11,16 @@ const addStock= asyncWrapper(async (req,res)=>{
    throw new BadRequestError(error.details[0].message)
    }
     const {name,price,units}=value;
-    
+    const upperCaseName=name.toUpperCase();
+
     const existing= await Stock.findOne({
-        name,
+        name:upperCaseName,
         user: req.user.userId 
     })
     if(existing){
         throw new BadRequestError('Stock with that name already exists!')
     }
-    const newStock=await Stock.create({name,price,units,user: req.user.userId,});
+    const newStock=await Stock.create({name:upperCaseName,price,units,user: req.user.userId,});
     res.status(201).json({
         msg:'Stock added Successfully',
         stock:newStock

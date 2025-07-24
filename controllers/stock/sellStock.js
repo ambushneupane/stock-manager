@@ -16,7 +16,7 @@ const sellStock= asyncWrapper(async(req,res)=>{
     // console.log('User ID:', req.user?.userId);
 
     const stock=await Stock.findOne({
-        name:value.name,
+        name:{$regex:`${value.name}$`,$options:'i'},
         user:req.user.userId
     })
 
@@ -68,7 +68,7 @@ const sellStock= asyncWrapper(async(req,res)=>{
 
 
     const responseData={
-        name,
+        name:name.toUpperCase(),
         quantity,
         sellPrice,
         totalSellPrice,
@@ -91,8 +91,7 @@ const sellStock= asyncWrapper(async(req,res)=>{
     message: 'Stock sold successfully',
     data: responseData
   });
-
-          
+     
 })
 
 module.exports=sellStock;
