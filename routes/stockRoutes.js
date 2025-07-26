@@ -10,7 +10,6 @@ router.get('/all',stockController.getAllStocks); // curl http://localhost:3000/a
 
 router.get('/summary',stockController.getSummary);
 
-router.post('/sell',stockController.sellStock);
 
 
 router.post('/add',stockController.addStock); 
@@ -26,8 +25,8 @@ curl -X POST http://localhost:3000/api/stocks/add \
 router.patch('/update/:id',stockController.updateStock)
 /*
 curl -X PATCH http://localhost:3000/api/stocks/update/6863c6277bc21c33d44b2c3c \
-  -H "Content-Type: application/json" \
-  -d '{"price": 600, "units": 150}'
+-H "Content-Type: application/json" \
+-d '{"price": 600, "units": 150}'
 */
 
 //HAS Plan executor error during findAndModify bug 
@@ -37,6 +36,9 @@ router.delete('/delete/:id',stockController.deleteStock)
 //curl -X DELETE http://localhost:3000/api/stocks/delete/<id>
 
 
+router.post('/sell',stockController.sellStock);
 
+router.get('/sell-history',stockController.getSellTransaction);
 
+router.get('/sell-summary',stockController.getSellSummary)
 module.exports=router;

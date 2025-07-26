@@ -45,6 +45,7 @@ const sellStock= asyncWrapper(async(req,res)=>{
 
     const dataToSave={
         stock:stock._id,
+        stockName:stock.name,
         user:req.user.userId,
         unitsSold:quantity,
         sellingPrice:sellPrice,

@@ -5,5 +5,7 @@ module.exports = {
     sellStock: require('./sellStock'),
     updateStock: require('./updateStock'),
     getSummary: require('./getSummary'),
+    getSellTransaction:require('./getSellTransaction'),
+    getSellSummary:require('./getSellSummary')
   };
   

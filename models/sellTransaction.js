@@ -7,6 +7,10 @@ const sellTransactionSchema= new mongoose.Schema({
         ref:'Stock',
         required:true
     },
+    stockName:{
+        type:String,
+        required:true
+    },
     user:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User',

@@ -2,6 +2,7 @@ const Stock= require('../../models/stock.js')
 const asyncWrapper=require('../../middleware/asyncHandler.js');
 const { BadRequestError } = require('../../errors/index.js');
 
+
 const getAllStocks=asyncWrapper(async (req,res)=>{
         const {name,minPrice,maxPrice,sort,fields}=req.query;
         
@@ -44,7 +45,7 @@ const getAllStocks=asyncWrapper(async (req,res)=>{
        if(fields){
         const requestedFields=fields.split(',').map(f=>f.trim());
          //strip leading - or + from field names
-         const cleanedFields=requestedFields.map(f=>f.replace(/^[-+]/,'').trim())
+         const cleanedFields=requestedFields.map(f=>f.replace(/^[-+]/,'').trim()) //replaces the +,- with ''
 
         const invalidFields=cleanedFields.filter(f=>!allowedFields.includes(f));// array with invalid fields
         
@@ -52,7 +53,7 @@ const getAllStocks=asyncWrapper(async (req,res)=>{
            throw new BadRequestError('Query contains invalid Fields!') 
         }
         const selectedFields= requestedFields.join(' ');
-        result=result.select(selectedFields).lean({virtuals:false})
+        result=result.select(selectedFields)
        }
 
       if(req.query.page||req.query.skip)
@@ -64,7 +65,10 @@ const getAllStocks=asyncWrapper(async (req,res)=>{
        
        result= result.skip(skip).limit(limit)
     }
-       const stocks= await result;
+    const stocks = await result;
+
+
+
         res.status(200).json({
             message:'Stocks Retrieved Successfully',
             count:stocks.length,
