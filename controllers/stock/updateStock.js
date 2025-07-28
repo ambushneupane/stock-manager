@@ -16,6 +16,7 @@ const updateStock= asyncWrapper(async (req, res) => {
   
   if(value.name){
     value.name= value.name.toUpperCase();
+    console.log(value.name)
   }
 
   const existing=await Stock.findOne({
