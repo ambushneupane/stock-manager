@@ -35,7 +35,7 @@ const getSellSummary = asyncWrapper(async (req, res) => {
             stock,
             totalUnitsSold,
             totalSellAmount,
-            totalBuyPrice
+            totalBuyPrice:Number(totalBuyPrice.toFixed(2))
         };
 
         if (profitOrLossAmount > 0) {

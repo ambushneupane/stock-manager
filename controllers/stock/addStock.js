@@ -19,17 +19,17 @@ const addStock = asyncWrapper(async (req, res) => {
         user: req.user.userId
     });
 
-    const numericPrice = Number(price.toFixed(2));
+    const numericPrice = Number(parseFloat(price).toFixed(2));
     const numericUnits = Number(units);
 
     if (existing) {
         const totalUnits = existing.units + numericUnits;
 
-        // ✅ Correct weighted average calculation
+        
         const totalCost = (existing.price * existing.units) + (numericPrice * numericUnits);
         const updatedPrice = totalCost / totalUnits;
 
-        existing.units = Number(totalUnits);
+        existing.units = totalUnits;
         existing.price = Number(updatedPrice.toFixed(2));
         await existing.save();
 

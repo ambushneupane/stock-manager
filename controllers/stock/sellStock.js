@@ -31,8 +31,8 @@ const sellStock= asyncWrapper(async(req,res)=>{
     const totalBuyPrice=stock.price*quantity;
     const totalSellPrice= sellPrice*quantity;
     
-    const profitOrLoss= totalSellPrice-totalBuyPrice;
-    const profitOrLossPercent=((profitOrLoss/totalBuyPrice)*100).toFixed(2);;
+    const profitOrLoss= Number((totalSellPrice-totalBuyPrice).toFixed(2))
+    const profitOrLossPercent=Number((profitOrLoss/totalBuyPrice)*100).toFixed(2);;
 
     //updating stock remaning units
     stock.units-=quantity;
