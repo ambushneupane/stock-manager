@@ -111,3 +111,68 @@ Download current stock data in CSV format.
 curl -X GET http://localhost:3000/api/stocks/export/current-stocks/csv \
 -H "Authorization: Bearer <your_token>" --output stocks.csv
 ```
+
+# User Authentication API – README
+
+## 1. Register User
+- **Endpoint:** `POST /api/users/register`
+- **Request Body:**
+```json
+{
+  "username": "yourname",
+  "email": "youremail@example.com",
+  "password": "yourpassword"
+}
+```
+- **Curl Example:**
+```bash
+curl -X POST http://localhost:3000/api/users/register \
+-H "Content-Type: application/json" \
+-d '{"username":"john","email":"john@example.com","password":"123456"}'
+```
+
+## 2. Login User
+- **Endpoint:** `POST /api/users/login`
+- **Request Body:**
+```json
+{
+  "email": "youremail@example.com",
+  "password": "yourpassword"
+}
+```
+- **Curl Example:**
+```bash
+curl -X POST http://localhost:3000/api/users/login \
+-H "Content-Type: application/json" \
+-d '{"email":"john@example.com","password":"123456"}'
+```
+
+## 3. Forgot Password
+- **Endpoint:** `POST /api/users/forgot-password`
+- **Request Body:**
+```json
+{
+  "email": "youremail@example.com"
+}
+```
+- **Curl Example:**
+```bash
+curl -X POST http://localhost:3000/api/users/forgot-password \
+-H "Content-Type: application/json" \
+-d '{"email":"john@example.com"}'
+```
+
+## 4. Reset Password
+- **Endpoint:** `POST /api/users/reset-password/:token`
+- **Request Body:**
+```json
+{
+  "password": "newpassword"
+}
+```
+- **Curl Example:**
+```bash
+curl -X POST http://localhost:3000/api/users/reset-password/<token> \
+-H "Content-Type: application/json" \
+-d '{"password":"newpassword"}'
+```
