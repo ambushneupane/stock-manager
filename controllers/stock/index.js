@@ -6,6 +6,8 @@ module.exports = {
     updateStock: require('./updateStock'),
     getSummary: require('./getSummary'),
     getSellTransaction:require('./getSellTransaction'),
-    getSellSummary:require('./getSellSummary')
+    getSellSummary:require('./getSellSummary'),
+    exportStocksCSV:require('./export/exportStockCSV.js'),
+    exportStocksPDF:require('./export/exportStocksPDF.js')
   };
-  
+ 
