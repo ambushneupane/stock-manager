@@ -36,7 +36,7 @@ stockSchema.index({ user: 1, name: 1 }, { unique: true });
 
 // stockSchema.index({ user: 1, name: 1 }, { unique: true });
 stockSchema.virtual('investment').get(function(){
-    return this.price*this.units;
+    return (this.price*this.units).toFixed(2);
 }) // Can't use arrow functions as we need to use `this` inside the function
 
 

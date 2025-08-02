@@ -1,7 +1,7 @@
 const Stock= require('../../models/stock.js')
 const asyncWrapper=require('../../middleware/asyncHandler.js');
 const { BadRequestError } = require('../../errors/index.js');
-
+const fetchStockPrice = require('../../utils/fetchStock.js'); 
 
 const getAllStocks=asyncWrapper(async (req,res)=>{
         const {name,minPrice,maxPrice,sort,fields}=req.query;
@@ -67,13 +67,43 @@ const getAllStocks=asyncWrapper(async (req,res)=>{
     }
     const stocks = await result;
 
+// // GETTING LIVE STOCK 
 
 
-        res.status(200).json({
-            message:'Stocks Retrieved Successfully',
-            count:stocks.length,
-            data:stocks
-        });
+const enhancedStocks= await Promise.all(
+
+    stocks.map(async (stock)=>{
+      const currentPrice=await fetchStockPrice(stock.name);
+      let profitLossKey={};
+      if (currentPrice!==null){
+        const percent=((currentPrice-stock.price)/stock.price)*100;
+        const value= Math.abs(percent).toFixed(2)+'%';
+        const profitLossAmount=((currentPrice-stock.price)*stock.units).toFixed(2);
+        
+
+        if (percent > 0) profitLossKey={profitPrecent:value,profitAmount:profitLossAmount};
+        else if(percent < 0) profitLossKey={lossPercent:value,lossAmount:Math.abs(profitLossAmount)};
+
+        else profitLossKey={profit:'0.00%'}
+
+      }else{
+        profitLossKey={profitOrLoss:'N/A'} //fallback in case fetch fails
+      }
+
+      return{
+        ...stock.toObject(),
+        currentPrice: currentPrice ?? null,
+        ...profitLossKey
+      }
+      
+    })
+)
+    
+    res.status(200).json({
+      message: 'Stocks Retrieved Successfully',
+      count: enhancedStocks.length,
+      data: enhancedStocks,
+    });
     
 })
 
