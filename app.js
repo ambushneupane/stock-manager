@@ -14,27 +14,16 @@ const errorHandlerMiddleware=require('./middleware/error-handler')
 const app=express();
 app.use(express.json());
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./docs/swagger.json'); // or wherever your swagger doc is
+
 
 //ROUTES
 
 app.use('/api/stocks',stockRoutes);
 app.use('/api/users',userRoutes);
-app.get('/', (req, res) => {
-    res.setHeader('Content-Type', 'text/plain');
-    res.status(200).send(`Welcome to the Stock Manager API.
-  
-  This backend service helps you track, manage, and analyze your stock investments.
-  
-  To get started:
-  
-  - Register a new user at POST /api/users/register
-  - Login at POST /api/users/login
-  - Explore stocks API under /api/stocks/
-  
-  Use a tool like Postman or your frontend app to interact with this API.`);
-  });
-  
-  
+app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 
 //404
 app.use(notFound)

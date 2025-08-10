@@ -8,6 +8,7 @@ module.exports = {
     getSellTransaction:require('./getSellTransaction'),
     getSellSummary:require('./getSellSummary'),
     exportStocksCSV:require('./export/exportStockCSV.js'),
+    getStockInsights:require('./stockInsights.js')
     // exportStocksPDF:require('./export/exportStocksPDF.js')
   };
  

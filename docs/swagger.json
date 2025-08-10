@@ -1,0 +1,442 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Stock Manager API",
+    "version": "1.0.0",
+    "description": "Backend service to track, manage, and analyze your stock investments. Features include user registration, authentication, stock CRUD, selling stocks, summaries, insights, and CSV export."
+  },
+  "servers": [
+    {
+      "url": "https://stock-manager-1-80ih.onrender.com/",
+      "description": "Render server"
+    }
+  ],
+  "tags": [
+    { "name": "Auth", "description": "User authentication and password management" },
+    { "name": "Users", "description": "User account management" },
+    { "name": "Stocks", "description": "Stock portfolio management" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "UserRegister": {
+        "type": "object",
+        "required": ["username", "email", "password"],
+        "properties": {
+          "username": { "type": "string", "example": "john_doe" },
+          "email": { "type": "string", "example": "john@example.com" },
+          "password": { "type": "string", "example": "password123" }
+        }
+      },
+      "UserLogin": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "example": "john@example.com" },
+          "password": { "type": "string", "example": "password123" }
+        }
+      },
+      "Stock": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string", "example": "64c8f1e2e2b1e2a1b2c3d4e5" },
+          "name": { "type": "string", "example": "AAPL" },
+          "price": { "type": "number", "example": 150.5 },
+          "units": { "type": "integer", "example": 10 },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "user": { "type": "string", "example": "64c8f1e2e2b1e2a1b2c3d4e5" }
+        }
+      },
+      "AddStock": {
+        "type": "object",
+        "required": ["name", "price", "units"],
+        "properties": {
+          "name": { "type": "string", "example": "AAPL" },
+          "price": { "type": "number", "example": 150.5 },
+          "units": { "type": "integer", "example": 10 }
+        }
+      },
+      "UpdateStock": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "AAPL" },
+          "price": { "type": "number", "example": 155.0 },
+          "units": { "type": "integer", "example": 12 }
+        }
+      },
+      "SellStock": {
+        "type": "object",
+        "required": ["name", "sellPrice", "quantity"],
+        "properties": {
+          "name": { "type": "string", "example": "AAPL" },
+          "sellPrice": { "type": "number", "example": 160.0 },
+          "quantity": { "type": "integer", "example": 5 }
+        }
+      },
+      "SellTransaction": {
+        "type": "object",
+        "properties": {
+          "stock": { "type": "string", "example": "AAPL" },
+          "quantity": { "type": "integer", "example": 5 },
+          "sellPrice": { "type": "number", "example": 160.0 },
+          "date": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Summary": {
+        "type": "object",
+        "properties": {
+          "totalInvestment": { "type": "number", "example": 10000.0 },
+          "totalCurrentValue": { "type": "number", "example": 12000.0 },
+          "totalProfitLoss": { "type": "number", "example": 2000.0 }
+        }
+      },
+      "StockInsights": {
+        "type": "object",
+        "properties": {
+          "topGainer": { "type": "string", "example": "AAPL" },
+          "topLoser": { "type": "string", "example": "TSLA" },
+          "profitLoss": { "type": "number", "example": 2000.0 }
+        }
+      }
+    }
+  },
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "paths": {
+    "/api/users/register": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Register a new user",
+        "description": "Create a new user account.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserRegister" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User registered successfully" },
+          "400": { "description": "Invalid input" }
+        }
+      }
+    },
+    "/api/users/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login user",
+        "description": "Authenticate user and return JWT token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserLogin" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": { "type": "string", "example": "jwt.token.here" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/api/users/forgot-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Request password reset",
+        "description": "Send a password reset link to the user's email.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "example": "john@example.com" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Reset link sent" }
+        }
+      }
+    },
+    "/api/users/reset-password/{token}": {
+      "patch": {
+        "tags": ["Auth"],
+        "summary": "Reset password",
+        "description": "Reset user password using a valid reset token.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": { "type": "string", "example": "newpassword123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Password reset successful" }
+        }
+      }
+    },
+    "/api/stocks/all": {
+      "get": {
+        "tags": ["Stocks"],
+        "summary": "Get all stocks for user",
+        "description": "Retrieve all stocks owned by the authenticated user. Supports filtering, sorting, and pagination.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "in": "query", "name": "name", "schema": { "type": "string" }, "description": "Filter by stock name" },
+          { "in": "query", "name": "minPrice", "schema": { "type": "number" }, "description": "Minimum price" },
+          { "in": "query", "name": "maxPrice", "schema": { "type": "number" }, "description": "Maximum price" },
+          { "in": "query", "name": "sort", "schema": { "type": "string" }, "description": "Sort order" },
+          { "in": "query", "name": "fields", "schema": { "type": "string" }, "description": "Fields to select" },
+          { "in": "query", "name": "page", "schema": { "type": "integer" }, "description": "Page number" },
+          { "in": "query", "name": "limit", "schema": { "type": "integer" }, "description": "Page size" }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of stocks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Stock" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stocks/add": {
+      "post": {
+        "tags": ["Stocks"],
+        "summary": "Add a new stock or update existing",
+        "description": "Add a new stock to the portfolio or update an existing one.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AddStock" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Stock added" },
+          "200": { "description": "Stock updated" }
+        }
+      }
+    },
+    "/api/stocks/update/{id}": {
+      "patch": {
+        "tags": ["Stocks"],
+        "summary": "Update a stock",
+        "description": "Update details of a specific stock by its ID.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateStock" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Stock updated" }
+        }
+      }
+    },
+    "/api/stocks/delete/{id}": {
+      "delete": {
+        "tags": ["Stocks"],
+        "summary": "Delete a stock",
+        "description": "Remove a stock from the portfolio by its ID.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Stock deleted" }
+        }
+      }
+    },
+    "/api/stocks/summary": {
+      "get": {
+        "tags": ["Stocks"],
+        "summary": "Get portfolio summary",
+        "description": "Get a summary of the user's portfolio including total investment, current value, and profit/loss.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Portfolio summary",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Summary" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stocks/sell": {
+      "post": {
+        "tags": ["Stocks"],
+        "summary": "Sell stock units",
+        "description": "Sell a quantity of a stock at a specified price.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SellStock" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sell transaction result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SellTransaction" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stocks/sell-history": {
+      "get": {
+        "tags": ["Stocks"],
+        "summary": "Get sell transaction history",
+        "description": "Retrieve the history of all sell transactions for the user.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of sell transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/SellTransaction" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stocks/sell-summary": {
+      "get": {
+        "tags": ["Stocks"],
+        "summary": "Get sell summary per stock",
+        "description": "Get a summary of sell transactions grouped by stock.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Sell summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "totalSold": { "type": "integer", "example": 10 },
+                      "totalRevenue": { "type": "number", "example": 1600.0 }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stocks/export/current-stocks/csv": {
+      "get": {
+        "tags": ["Stocks"],
+        "summary": "Export current stocks as CSV",
+        "description": "Export the user's current stock portfolio as a CSV file.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "CSV file",
+            "content": {
+              "text/csv": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stocks/stock-insights": {
+      "get": {
+        "tags": ["Stocks"],
+        "summary": "Get stock insights (profit/loss, top gainer/loser)",
+        "description": "Get insights such as profit/loss and top gainer/loser stocks.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Stock insights",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/StockInsights" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

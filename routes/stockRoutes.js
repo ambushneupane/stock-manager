@@ -45,5 +45,5 @@ router.get('/sell-summary',stockController.getSellSummary)
 router.get('/export/current-stocks/csv',stockController.exportStocksCSV)
 
 // router.get('/export/current-stocks/pdf',stockController.exportStocksPDF)
-
+router.get('/stock-insights',stockController.getStockInsights)
 module.exports=router;
