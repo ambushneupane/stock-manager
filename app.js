@@ -1,5 +1,4 @@
 require('dotenv').config()
-const cors = require('cors');
 
 const express= require('express');
 const port=process.env.PORT|| 3000;
@@ -14,9 +13,6 @@ const errorHandlerMiddleware=require('./middleware/error-handler')
 
 const app=express();
 app.use(express.json());
-app.use(cors({
-    origin: 'https://stock-manager-1-80ih.onrender.com/'
-  }));
   
 
 const swaggerUi = require('swagger-ui-express');
